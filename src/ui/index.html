@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Electron with TypeORM</title>
+</head>
+<body>
+  <h1>Electron with TypeORM</h1>
+  <button id="createLicorButton">Create Licor</button>
+  <button id="fetchLicoresButton">Fetch Licores</button>
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    document.getElementById('createLicorButton').addEventListener('click', () => {
+      ipcRenderer.send('create-licor', {
+        proveedor: 'Proveedor1',
+        tipo: 'Tipo1',
+        marca: 'Marca1',
+        estiloOGraduacion: 'Estilo1',
+        cantidad: 10,
+        stockCritico: 5,
+        total: 15
+      });
+    });
+
+    ipcRenderer.on('create-licor-response', (event, data) => {
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        console.log('Licor created:', data);
+      }
+    });
+
+    document.getElementById('fetchLicoresButton').addEventListener('click', () => {
+      ipcRenderer.send('fetch-licores');
+    });
+
+    ipcRenderer.on('fetch-licores-response', (event, data) => {
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        console.log('Licores fetched:', data);
+      }
+    });
+  </script>
+</body>
+</html>
