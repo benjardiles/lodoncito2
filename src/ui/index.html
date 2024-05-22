@@ -1,46 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Electron with TypeORM</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electron & MySQL</title>
+  <link rel="stylesheet" href="bootstrap.min.css">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
+
 </head>
+
 <body>
-  <h1>Electron with TypeORM</h1>
-  <button id="createLicorButton">Create Licor</button>
-  <button id="fetchLicoresButton">Fetch Licores</button>
-  <script>
-    const { ipcRenderer } = require('electron');
 
-    document.getElementById('createLicorButton').addEventListener('click', () => {
-      ipcRenderer.send('create-licor', {
-        proveedor: 'Proveedor1',
-        tipo: 'Tipo1',
-        marca: 'Marca1',
-        estiloOGraduacion: 'Estilo1',
-        cantidad: 10,
-        stockCritico: 5,
-        total: 15
-      });
-    });
+  <main class="container-fluid">
 
-    ipcRenderer.on('create-licor-response', (event, data) => {
-      if (data.error) {
-        console.error(data.error);
-      } else {
-        console.log('Licor created:', data);
-      }
-    });
+    <div class="row">
 
-    document.getElementById('fetchLicoresButton').addEventListener('click', () => {
-      ipcRenderer.send('fetch-licores');
-    });
+      <div class="col-md-6 p-4 my-auto">
 
-    ipcRenderer.on('fetch-licores-response', (event, data) => {
-      if (data.error) {
-        console.error(data.error);
-      } else {
-        console.log('Licores fetched:', data);
-      }
-    });
-  </script>
+        <!-- Product Form -->
+        <form id="productForm" class="card card-body">
+          <div class="form-group">
+            <input type="text" id="name" placeholder="Product's Name" class="form-control" autofocus>
+          </div>
+          <div class="form-group">
+            <input type="number" id="price" placeholder="Product's Price" step="any" class="form-control">
+          </div>
+          <div class="form-group">
+            <textarea id="description" rows="3" placeholder="Product's Description" class="form-control"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            Save
+          </button>
+        </form>
+
+      </div>
+
+      <!-- Product List -->
+      <div class="col-md-6">
+        <div id="products"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="./app.js"></script>
+
 </body>
+
 </html>

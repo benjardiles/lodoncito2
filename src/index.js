@@ -1,4 +1,9 @@
-const {createWindow} = require('./main')
-const {app} = require('electron')
+const { createWindow } = require("./main");
+const { app } = require("electron");
 
-app.whenReady().then(createWindow)
+require('./database');
+
+require('electron-reload')(__dirname);
+
+app.allowRendererProcessReuse = true;
+app.whenReady().then(createWindow);
