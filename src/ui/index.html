@@ -1,52 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Electron & MySQL</title>
-  <link rel="stylesheet" href="c:\Users\Benja\Downloads\bootstrap.min.css">
-  <link rel="stylesheet" href="app.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
-
+  <title>Mi App Electron</title>
+  <link rel="stylesheet" href="./bootstrap.min(2).css">
 </head>
-
 <body>
+  <h1>Productos</h1>
+  <form id="product-form">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <br>
+    <input type="text" id="tipo" placeholder="Tipo" required>
+    <br>
+    <input type="text" id="marca" placeholder="Marca" required>
+    <br>
+    <input type="text" id="estiloGraduacion" placeholder="Estilo Graduacion" required>
+    <br>
+    <input type="number" id="cantidad" placeholder="Cantidad" required>
+    <br>
+    <input type="number" id="stock_critico" placeholder="Stock Crítico" required>
+    <br>
+    <input type="text" id="id_proveedor" placeholder="ID Proveedor" required>
+    <br>
+    <button type="submit">Agregar Producto</button>
+  </form>
+  <ul id="product-list"></ul>
 
-  <main class="container-fluid">
+  <!-- Botón para abrir la página de proveedores -->
+  <button id="open-providers">Ver Proveedores</button>
 
-    <div class="row">
+  <script>
+    const form = document.getElementById('product-form');
+    const productList = document.getElementById('product-list');
+    const openProvidersButton = document.getElementById('open-providers');
 
-      <div class="col-md-6 p-4 my-auto">
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const product = {
+        nombre: form.nombre.value,
+        tipo: form.tipo.value,
+        marca: form.marca.value,
+        estiloGraduacion: form.estiloGraduacion.value,
+        cantidad: form.cantidad.value,
+        stock_critico: form.stock_critico.value,
+        id_proveedor: form.id_proveedor.value,
+      };
+      const newProduct = await window.api.createProduct(product);
+      console.log('Product created:', newProduct);
+      form.reset();
+      loadProducts();
+    });
 
-        <!-- Product Form -->
-        <form id="productForm" class="card card-body">
-          <div class="form-group">
-            <input type="text" id="name" placeholder="Product's Name" class="form-control" autofocus>
-          </div>
-          <div class="form-group">
-            <input type="number" id="price" placeholder="Product's Price" step="any" class="form-control">
-          </div>
-          <div class="form-group">
-            <textarea id="description" rows="3" placeholder="Product's Description" class="form-control"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary">
-            Save
-          </button>
-        </form>
+    openProvidersButton.addEventListener('click', () => {
+      window.api.openProvidersWindow();
+    });
 
-      </div>
-
-      <!-- Product List -->
-      <div class="col-md-6">
-        <div id="products"></div>
-      </div>
-    </div>
-
-  </main>
-
-  <script src="./app.js"></script>
-
+    async function loadProducts() {
+      const products = await window.api.getProducts();
+      productList.innerHTML = '';
+      products.forEach(product => {
+        const li = document.createElement('li');
+        li.textContent = `${product.nombre} - ${product.marca}`;
+        productList.appendChild(li);
+      });
+    }
+    loadProducts();
+  </script>
 </body>
-
 </html>
