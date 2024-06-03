@@ -1,72 +1,158 @@
-const { BrowserWindow, Notification } = require("electron");
-const { getConnection } = require("./database");
+const { app, BrowserWindow, Notification, ipcMain } = require('electron');
+const path = require('path');
+const { PrismaClient } = require('@prisma/client');
 
-let window;
+const prisma = new PrismaClient();
+
+let mainWindow;
 
 const createProduct = async (product) => {
   try {
-    const pool = await getConnection();
-    product.price = parseFloat(product.price);
-    const result = await pool.query("INSERT INTO product SET ?", product);
-    product.id = result.insertId;
+    const newProduct = await prisma.licor.create({
+      data: {
+        nombre: product.nombre,
+        tipo: product.tipo,
+        marca: product.marca,
+        estiloGraduacion: product.estiloGraduacion,
+        cantidad: parseInt(product.cantidad),
+        stock_critico: parseInt(product.stock_critico),
+        id_proveedor: product.id_proveedor
+      },
+    });
 
-    // Notify the User
     new Notification({
-      title: "Electron Mysql",
+      title: "Electron Prisma",
       body: "New Product Saved Successfully",
     }).show();
 
-    // Return the created Product
-    return product;
+    return newProduct;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
 const getProducts = async () => {
-  const pool = await getConnection();
-  const results = await pool.query("SELECT * FROM product ORDER BY id DESC");
-  return results;
+  try {
+    const products = await prisma.licor.findMany();
+    console.log({products});
+    return products;
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const deleteProduct = async (id) => {
-  const pool = await getConnection();
-  const result = await pool.query("DELETE FROM product WHERE id = ?", id);
-  return result;
+  try {
+    await prisma.licor.delete({
+      where: { id: id },
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const getProductById = async (id) => {
-  const pool = await getConnection();
-  const result = await pool.query("SELECT * FROM product WHERE id = ?", id);
-  return result.rows[0]; // Assuming you want to return the first row of the result
+  try {
+    const product = await prisma.licor.findUnique({
+      where: { id: id },
+    });
+    return product;
+  } catch (error) {
+    console.error(error);
+  }
 };
+
+const getProviders = async () => {
+  try {
+    console.log("toy aca")
+    const providers = await prisma.proveedor.findMany();
+    console.log({providers});
+    return providers;
+  } catch (error) {
+    console.error(error);
+  }
+
+}
 
 const updateProduct = async (id, product) => {
-  const pool = await getConnection();
-  const result = await pool.query("UPDATE product SET ? WHERE id = ?", [
-    product,
-    id,
-  ]);
-  console.log(result);
+  try {
+    const updatedProduct = await prisma.licor.update({
+      where: { id: id },
+      data: product,
+    });
+    return updatedProduct;
+  } catch (error) {
+    console.error(error);
+  }
 };
 
-function createWindow() {
-  window = new BrowserWindow({
-    width: 800,
-    height: 600,
+function createMainWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1080,
+    height: 720,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
-  window.loadFile("src/ui/index.html");
+  mainWindow.loadFile('src/ui/index.html');
 }
 
-module.exports = {
-  createWindow,
-  createProduct,
-  getProducts,
-  deleteProduct,
-  getProductById,
-  updateProduct
-};
+function createProvidersWindow() {
+  const providersWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
+
+  providersWindow.loadFile('src/ui/providers.html');
+}
+
+ipcMain.handle('create-product', async (event, product) => {
+  return await createProduct(product);
+});
+
+ipcMain.handle('get-products', async () => {
+  return await getProducts();
+});
+
+ipcMain.handle('delete-product', async (event, id) => {
+  return await deleteProduct(id);
+});
+
+ipcMain.handle('get-product-by-id', async (event, id) => {
+  return await getProductById(id);
+});
+
+ipcMain.handle('update-product', async (event, id, product) => {
+  return await updateProduct(id, product);
+});
+
+ipcMain.handle('get-providers', async () => {
+  console.log("toy aca")
+  return await getProviders();
+});
+
+ipcMain.on('open-providers-window', () => {
+  createProvidersWindow();
+});
+
+app.whenReady().then(createMainWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createMainWindow();
+  }
+});
