@@ -1,22 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Proveedores</title>
     <style>
-        /* Estilos opcionales para la tabla */
+        /* Estilos adicionales para la tabla */
         table {
             border-collapse: collapse;
             width: 100%;
         }
+        
         th, td {
             border: 1px solid #dddddd;
             text-align: left;
             padding: 8px;
         }
+        
         th {
             background-color: #f2f2f2;
+        }
+        
+        /* Estilos adicionales para el título */
+        h1 {
+            color: blue;
+            text-align: center;
         }
     </style>
 </head>
@@ -37,13 +46,29 @@
         </tbody>
     </table>
 
-    <!-- Script para cargar y mostrar los proveedores -->
     <script>
-        const loadProviders = () => {
-            const providers = window.api.getProviders();
-            console.log("estoy aca");
-        }
-        
+        document.addEventListener('DOMContentLoaded', async () => {
+            const tbody = document.getElementById('providers-body');
+
+            // Obtener los proveedores desde la API expuesta por Electron
+            const providers = await window.api.getProviders();
+
+            // Limpiar el contenido anterior de la tabla
+            tbody.innerHTML = '';
+
+            // Iterar sobre los datos de los proveedores y agregar filas a la tabla
+            providers.forEach(provider => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${provider.id}</td>
+                    <td>${provider.nombre}</td>
+                    <td>${provider.telefono}</td>
+                    <td>${provider.email}</td>
+                    <td>${provider.direccion}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        });
     </script>
 </body>
 </html>

@@ -33,10 +33,8 @@
       </div>
       <div class="product-list-container">
         <nav class="navbar">
-          <h2>Stock</h2>
           <div class="filter-sort">
             <select id="provider-filter" class="form-select">
-              <option value="">Todos los Proveedores</option>
               <!-- Aquí se agregarán los proveedores dinámicamente -->
             </select>
             <select id="sort-order" class="form-select">
@@ -46,6 +44,8 @@
           </div>
         </nav>
         <ul id="product-list" class="product-list"></ul>
+        <h2>Productos Eliminados</h2>
+        <ul id="deleted-product-list" class="product-list"></ul>
       </div>
     </div>
 
@@ -56,9 +56,12 @@
   <script>
     const form = document.getElementById('product-form');
     const productList = document.getElementById('product-list');
+    const deletedProductList = document.getElementById('deleted-product-list');
     const openProvidersButton = document.getElementById('open-providers');
     const providerFilter = document.getElementById('provider-filter');
     const sortOrder = document.getElementById('sort-order');
+
+    let deletedProducts = [];
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -119,13 +122,60 @@
       products.forEach(product => {
         const li = document.createElement('li');
         li.textContent = `${product.nombre} - ${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
+        
         const editButton = document.createElement('button');
         editButton.textContent = 'Editar';
         editButton.className = 'btn btn-sm btn-warning';
         editButton.addEventListener('click', () => loadProductIntoForm(product));
         li.appendChild(editButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.className = 'btn btn-sm btn-danger';
+        deleteButton.addEventListener('click', () => confirmDeleteProduct(product));
+        li.appendChild(deleteButton);
+
         productList.appendChild(li);
       });
+    }
+
+    function confirmDeleteProduct(product) {
+      const confirmation = confirm(`¿Estás seguro de que deseas eliminar el producto ${product.nombre}?`);
+      if (confirmation) {
+        deleteProduct(product);
+      }
+    }
+
+    async function deleteProduct(product) {
+      await window.api.deleteProduct(product.id);
+      console.log('Product deleted:', product.id);
+      deletedProducts.push(product);
+      loadProducts();
+      loadDeletedProducts();
+    }
+
+    function loadDeletedProducts() {
+      deletedProductList.innerHTML = '';
+      deletedProducts.forEach(product => {
+        const li = document.createElement('li');
+        li.textContent = `${product.nombre} - ${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
+        
+        const restoreButton = document.createElement('button');
+        restoreButton.textContent = 'Restablecer';
+        restoreButton.className = 'btn btn-sm btn-success';
+        restoreButton.addEventListener('click', () => restoreProduct(product));
+        li.appendChild(restoreButton);
+
+        deletedProductList.appendChild(li);
+      });
+    }
+
+    async function restoreProduct(product) {
+      await window.api.createProduct(product);
+      console.log('Product restored:', product.id);
+      deletedProducts = deletedProducts.filter(p => p.id !== product.id);
+      loadProducts();
+      loadDeletedProducts();
     }
 
     async function loadProviders() {

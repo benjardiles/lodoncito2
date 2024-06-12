@@ -1,149 +1,41 @@
-const { app, BrowserWindow, Notification, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const fs = require('fs');
 
 let mainWindow;
-
-const createProduct = async (product) => {
-  try {
-    const newProduct = await prisma.licor.create({
-      data: {
-        nombre: product.nombre,
-        tipo: product.tipo,
-        marca: product.marca,
-        estiloGraduacion: product.estiloGraduacion,
-        cantidad: parseInt(product.cantidad),
-        stock_critico: parseInt(product.stock_critico),
-        id_proveedor: product.id_proveedor
-      },
-    });
-
-    new Notification({
-      title: "Electron Prisma",
-      body: "New Product Saved Successfully",
-    }).show();
-
-    return newProduct;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const getProducts = async () => {
-  try {
-    const products = await prisma.licor.findMany();
-    console.log({products});
-    return products;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const deleteProduct = async (id) => {
-  try {
-    await prisma.licor.delete({
-      where: { id: id },
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const getProductById = async (id) => {
-  try {
-    const product = await prisma.licor.findUnique({
-      where: { id: id },
-    });
-    return product;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const getProviders = async () => {
-  try {
-    console.log("toy aca")
-    const providers = await prisma.proveedor.findMany();
-    console.log({providers});
-    return providers;
-  } catch (error) {
-    console.error(error);
-  }
-
-}
-
-const updateProduct = async (id, product) => {
-  try {
-    const updatedProduct = await prisma.licor.update({
-      where: { id: id },
-      data: product,
-    });
-    return updatedProduct;
-  } catch (error) {
-    console.error(error);
-  }
-};
+let providersWindow;
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 1080,
-    height: 720,
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-    },
+      contextIsolation: true
+    }
   });
 
-  mainWindow.loadFile('src/ui/index.html');
+  mainWindow.loadFile('index.html');
 }
 
 function createProvidersWindow() {
-  const providersWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+  providersWindow = new BrowserWindow({
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-    },
+      contextIsolation: true
+    }
   });
 
-  providersWindow.loadFile('src/ui/providers.html');
+  providersWindow.loadFile('providers.html');
 }
 
-ipcMain.handle('create-product', async (event, product) => {
-  return await createProduct(product);
-});
+app.whenReady().then(() => {
+  createMainWindow();
 
-ipcMain.handle('get-products', async () => {
-  return await getProducts();
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createMainWindow();
+    }
+  });
 });
-
-ipcMain.handle('delete-product', async (event, id) => {
-  return await deleteProduct(id);
-});
-
-ipcMain.handle('get-product-by-id', async (event, id) => {
-  return await getProductById(id);
-});
-
-ipcMain.handle('update-product', async (event, id, product) => {
-  return await updateProduct(id, product);
-});
-
-ipcMain.handle('get-providers', async () => {
-  console.log("toy aca")
-  return await getProviders();
-});
-
-ipcMain.on('open-providers-window', () => {
-  createProvidersWindow();
-});
-
-app.whenReady().then(createMainWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -151,8 +43,92 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createMainWindow();
+const productsFilePath = path.join(__dirname, 'products.json');
+const deletedProductsFilePath = path.join(__dirname, 'deleted_products.json');
+
+function readJSONFile(filePath) {
+  if (fs.existsSync(filePath)) {
+    const data = fs.readFileSync(filePath);
+    return JSON.parse(data);
   }
+  return [];
+}
+
+function writeJSONFile(filePath, data) {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+ipcMain.handle('get-products', async () => {
+  return readJSONFile(productsFilePath);
+});
+
+ipcMain.handle('create-product', async (event, product) => {
+  const products = readJSONFile(productsFilePath);
+  product.id = new Date().getTime(); // Generación simple de ID
+  products.push(product);
+  writeJSONFile(productsFilePath, products);
+  return product;
+});
+
+ipcMain.handle('get-providers', async () => {
+  const providers = [
+    { id: 1, nombre: 'Proveedor 1', telefono: '123456789', email: 'proveedor1@example.com', direccion: 'Calle 1' },
+    { id: 2, nombre: 'Proveedor 2', telefono: '987654321', email: 'proveedor2@example.com', direccion: 'Calle 2' }
+  ];
+  return providers;
+});
+
+ipcMain.handle('update-product', async (event, id, updatedProduct) => {
+  const products = readJSONFile(productsFilePath);
+  const productIndex = products.findIndex(product => product.id == id);
+  if (productIndex !== -1) {
+    products[productIndex] = { ...products[productIndex], ...updatedProduct };
+    writeJSONFile(productsFilePath, products);
+    return products[productIndex];
+  }
+  return null;
+});
+
+ipcMain.handle('delete-product', async (event, id) => {
+  const products = readJSONFile(productsFilePath);
+  const productIndex = products.findIndex(product => product.id == id);
+  let deletedProduct = null;
+  if (productIndex !== -1) {
+    [deletedProduct] = products.splice(productIndex, 1);
+    writeJSONFile(productsFilePath, products);
+  }
+  
+  if (deletedProduct) {
+    const deletedProducts = readJSONFile(deletedProductsFilePath);
+    deletedProducts.push(deletedProduct);
+    writeJSONFile(deletedProductsFilePath, deletedProducts);
+  }
+
+  return deletedProduct;
+});
+
+ipcMain.handle('get-deleted-products', async () => {
+  return readJSONFile(deletedProductsFilePath);
+});
+
+ipcMain.handle('restore-product', async (event, id) => {
+  const deletedProducts = readJSONFile(deletedProductsFilePath);
+  const productIndex = deletedProducts.findIndex(product => product.id == id);
+  let restoredProduct = null;
+  if (productIndex !== -1) {
+    [restoredProduct] = deletedProducts.splice(productIndex, 1);
+    writeJSONFile(deletedProductsFilePath, deletedProducts);
+
+    const products = readJSONFile(productsFilePath);
+    products.push(restoredProduct);
+    writeJSONFile(productsFilePath, products);
+  }
+
+  return restoredProduct;
+});
+
+ipcMain.handle('get-product-by-id', async (event, id) => {
+  const products = readJSONFile(productsFilePath);
+  const product = products.find(product => product.id == id);
+  return product || null;
 });

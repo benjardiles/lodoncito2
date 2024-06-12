@@ -1,0 +1,10 @@
+{
+    "products": [
+      { "id": 1, "nombre": "Producto 1", "tipo": "Tipo 1", "marca": "Marca 1", "estiloGraduacion": "Estilo 1", "cantidad": 10, "stock_critico": 2, "id_proveedor": 1 },
+      { "id": 2, "nombre": "Producto 2", "tipo": "Tipo 2", "marca": "Marca 2", "estiloGraduacion": "Estilo 2", "cantidad": 5, "stock_critico": 1, "id_proveedor": 2 }
+    ],
+    "deletedProducts": [
+      { "id": 3, "nombre": "Producto 3", "tipo": "Tipo 3", "marca": "Marca 3", "estiloGraduacion": "Estilo 3", "cantidad": 8, "stock_critico": 3, "id_proveedor": 1 }
+    ]
+  }
+  
