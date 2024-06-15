@@ -80,10 +80,21 @@
         // Update existing product
         const updatedProduct = await window.api.updateProduct(productId, product);
         console.log('Product updated:', updatedProduct);
+
+        // Check if the updated product's stock is equal or less than the critical stock
+        if (parseInt(product.cantidad) <= parseInt(product.stock_critico)) {
+          alert(`Atención: El stock del producto ${product.nombre} ha alcanzado o está por debajo del nivel crítico.`);
+        }
+
       } else {
         // Create new product
         const newProduct = await window.api.createProduct(product);
         console.log('Product created:', newProduct);
+
+        // Check if the new product's stock is equal or less than the critical stock
+        if (parseInt(product.cantidad) <= parseInt(product.stock_critico)) {
+          alert(`Atención: El stock del producto ${product.nombre} ha alcanzado o está por debajo del nivel crítico.`);
+        }
       }
 
       form.reset();
@@ -121,20 +132,43 @@
       productList.innerHTML = '';
       products.forEach(product => {
         const li = document.createElement('li');
-        li.textContent = `${product.nombre} - ${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
-        
+        li.className = 'product-list-item';
+
+        const productInfo = document.createElement('div');
+        productInfo.className = 'product-info';
+        productInfo.textContent = `${product.nombre} - ${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
+        li.appendChild(productInfo);
+
+        const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'button-group';
+
         const editButton = document.createElement('button');
         editButton.textContent = 'Editar';
         editButton.className = 'btn btn-sm btn-warning';
         editButton.addEventListener('click', () => loadProductIntoForm(product));
-        li.appendChild(editButton);
+        buttonGroup.appendChild(editButton);
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Eliminar';
         deleteButton.className = 'btn btn-sm btn-danger';
         deleteButton.addEventListener('click', () => confirmDeleteProduct(product));
-        li.appendChild(deleteButton);
+        buttonGroup.appendChild(deleteButton);
 
+        // Botón para incrementar el stock
+        const incrementButton = document.createElement('button');
+        incrementButton.textContent = '+';
+        incrementButton.className = 'btn btn-sm btn-success';
+        incrementButton.addEventListener('click', () => changeProductQuantity(product.id, 1));
+        buttonGroup.appendChild(incrementButton);
+
+        // Botón para decrementar el stock
+        const decrementButton = document.createElement('button');
+        decrementButton.textContent = '-';
+        decrementButton.className = 'btn btn-sm btn-secondary';
+        decrementButton.addEventListener('click', () => changeProductQuantity(product.id, -1));
+        buttonGroup.appendChild(decrementButton);
+
+        li.appendChild(buttonGroup);
         productList.appendChild(li);
       });
     }
@@ -154,18 +188,42 @@
       loadDeletedProducts();
     }
 
+    async function changeProductQuantity(productId, change) {
+      const product = await window.api.getProductById(productId);
+      if (product) {
+        product.cantidad = parseInt(product.cantidad) + change;
+        if (product.cantidad < 0) {
+          product.cantidad = 0;
+        }
+        if (product.cantidad <= product.stock_critico) {
+          alert(`Atención: El stock del producto ${product.nombre} ha alcanzado el nivel crítico.`);
+        }
+        await window.api.updateProduct(productId, product);
+        loadProducts();
+      }
+    }
+
     function loadDeletedProducts() {
       deletedProductList.innerHTML = '';
       deletedProducts.forEach(product => {
         const li = document.createElement('li');
-        li.textContent = `${product.nombre} - ${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
-        
+        li.className = 'product-list-item';
+
+        const productInfo = document.createElement('div');
+        productInfo.className = 'product-info';
+        productInfo.textContent = `${product.nombre} - ${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
+        li.appendChild(productInfo);
+
+        const buttonGroup = document.createElement('div');
+        buttonGroup.className = 'button-group';
+
         const restoreButton = document.createElement('button');
         restoreButton.textContent = 'Restablecer';
         restoreButton.className = 'btn btn-sm btn-success';
         restoreButton.addEventListener('click', () => restoreProduct(product));
-        li.appendChild(restoreButton);
+        buttonGroup.appendChild(restoreButton);
 
+        li.appendChild(buttonGroup);
         deletedProductList.appendChild(li);
       });
     }
@@ -188,6 +246,9 @@
         providerFilter.appendChild(option);
       });
     }
+
+   
+
 
     function loadProductIntoForm(product) {
       form['product-id'].value = product.id;

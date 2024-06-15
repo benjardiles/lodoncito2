@@ -1,3 +1,4 @@
+/* Mantén tu estilo existente */
 body {
   font-family: Arial, sans-serif;
   background-color: #f0f8ff;
@@ -54,9 +55,9 @@ h1 {
 
 .product-list-container {
   flex: 2;
-  max-width: 700px; /* Aumentar el ancho */
+  max-width: 700px;
   margin-left: 20px;
-  height: 600px; /* Aumentar la altura */
+  height: 600px;
   overflow-y: auto;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -99,6 +100,15 @@ h1 {
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #ccc;
+}
+
+.product-info {
+  flex: 1;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
 }
 
 .product-list li button {
