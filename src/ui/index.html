@@ -34,6 +34,7 @@
       <div class="product-list-container">
         <nav class="navbar">
           <div class="filter-sort">
+            <input type="text" id="search-bar" placeholder="Buscar...">
             <select id="provider-filter" class="form-select">
               <!-- Aquí se agregarán los proveedores dinámicamente -->
             </select>
@@ -60,6 +61,7 @@
     const openProvidersButton = document.getElementById('open-providers');
     const providerFilter = document.getElementById('provider-filter');
     const sortOrder = document.getElementById('sort-order');
+    const searchBar = document.getElementById('search-bar');
 
     let deletedProducts = [];
 
@@ -107,6 +109,7 @@
 
     providerFilter.addEventListener('change', loadProducts);
     sortOrder.addEventListener('change', loadProducts);
+    searchBar.addEventListener('input', filterProductsByName);
 
     async function loadProducts() {
       let products = await window.api.getProducts();
@@ -171,6 +174,23 @@
         li.appendChild(buttonGroup);
         productList.appendChild(li);
       });
+
+      // Ejecutar la función de filtro para aplicar cualquier entrada de búsqueda actual
+      filterProductsByName();
+    }
+
+    function filterProductsByName() {
+      const query = searchBar.value.toLowerCase();
+      const productItems = document.querySelectorAll('.product-list-item');
+
+      productItems.forEach(item => {
+        const productName = item.querySelector('.product-info').textContent.toLowerCase();
+        if (productName.includes(query)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
     }
 
     function confirmDeleteProduct(product) {
@@ -218,9 +238,9 @@
         buttonGroup.className = 'button-group';
 
         const restoreButton = document.createElement('button');
-        restoreButton.textContent = 'Restablecer';
+        restoreButton.textContent = 'Restaurar';
         restoreButton.className = 'btn btn-sm btn-success';
-        restoreButton.addEventListener('click', () => restoreProduct(product));
+        restoreButton.addEventListener('click', () => restoreProduct(product.id));
         buttonGroup.appendChild(restoreButton);
 
         li.appendChild(buttonGroup);
@@ -228,27 +248,14 @@
       });
     }
 
-    async function restoreProduct(product) {
-      await window.api.createProduct(product);
-      console.log('Product restored:', product.id);
-      deletedProducts = deletedProducts.filter(p => p.id !== product.id);
-      loadProducts();
-      loadDeletedProducts();
+    async function restoreProduct(productId) {
+      const restoredProduct = await window.api.restoreProduct(productId);
+      if (restoredProduct) {
+        deletedProducts = deletedProducts.filter(product => product.id !== productId);
+        loadProducts();
+        loadDeletedProducts();
+      }
     }
-
-    async function loadProviders() {
-      const providers = await window.api.getProviders();
-      providerFilter.innerHTML = '<option value="">Todos los Proveedores</option>';
-      providers.forEach(provider => {
-        const option = document.createElement('option');
-        option.value = provider.id;
-        option.textContent = provider.nombre;
-        providerFilter.appendChild(option);
-      });
-    }
-
-   
-
 
     function loadProductIntoForm(product) {
       form['product-id'].value = product.id;
@@ -261,6 +268,18 @@
       form.id_proveedor.value = product.id_proveedor;
     }
 
+    async function loadProviders() {
+      const providers = await window.api.getProviders();
+      providerFilter.innerHTML = '<option value="">Todos los proveedores</option>';
+      providers.forEach(provider => {
+        const option = document.createElement('option');
+        option.value = provider.id;
+        option.textContent = provider.nombre;
+        providerFilter.appendChild(option);
+      });
+    }
+
+    // Cargar productos y proveedores
     loadProducts();
     loadProviders();
   </script>

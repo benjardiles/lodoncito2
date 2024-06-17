@@ -9,7 +9,7 @@ let mainWindow;
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1080,
-    height: 720,
+    height: 1080,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -114,6 +114,48 @@ ipcMain.handle('update-product', async (event, id, product) => {
       },
     });
     return updatedProduct;
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+ipcMain.handle('change-product-quantity', async (event, id, change) => {
+  try {
+    const product = await prisma.licor.findUnique({
+      where: { id: id },
+    });
+
+    if (product) {
+      const newQuantity = parseInt(product.cantidad, 10) + change;
+      const updatedProduct = await prisma.licor.update({
+        where: { id: id },
+        data: { cantidad: newQuantity < 0 ? 0 : newQuantity },
+      });
+
+      // Registrar en la tabla de Consumo
+      await prisma.consumo.create({
+        data: {
+          fecha: new Date(),
+          cantidad: change,
+          id_licor: id,
+        },
+      });
+
+      return updatedProduct;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+ipcMain.handle('get-consumption', async () => {
+  try {
+    const consumption = await prisma.consumo.findMany({
+      include: {
+        licor: true,
+      },
+    });
+    return consumption;
   } catch (error) {
     console.error(error);
   }
