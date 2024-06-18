@@ -15,7 +15,6 @@ datasource db {
 
 model Licor {
   id               String    @id @default(uuid())
-  nombre           String
   tipo             String
   marca            String
   estiloGraduacion String
