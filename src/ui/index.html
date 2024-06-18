@@ -14,7 +14,7 @@
         <h2>Agregar Producto</h2>
         <form id="product-form" class="product-form">
           <input type="hidden" id="product-id">
-          <input type="text" id="nombre" placeholder="Nombre" required>
+          <!-- <input type="text" id="nombre" placeholder="Nombre" required> -->
           <br>
           <input type="text" id="tipo" placeholder="Tipo" required>
           <br>
@@ -45,8 +45,7 @@
           </div>
         </nav>
         <ul id="product-list" class="product-list"></ul>
-        <h2>Productos Eliminados</h2>
-        <ul id="deleted-product-list" class="product-list"></ul>
+        
       </div>
     </div>
 
@@ -57,7 +56,7 @@
   <script>
     const form = document.getElementById('product-form');
     const productList = document.getElementById('product-list');
-    const deletedProductList = document.getElementById('deleted-product-list');
+    
     const openProvidersButton = document.getElementById('open-providers');
     const providerFilter = document.getElementById('provider-filter');
     const sortOrder = document.getElementById('sort-order');
@@ -69,7 +68,7 @@
       e.preventDefault();
       const productId = form['product-id'].value;
       const product = {
-        nombre: form.nombre.value,
+        //nombre: form.nombre.value,
         tipo: form.tipo.value,
         marca: form.marca.value,
         estiloGraduacion: form.estiloGraduacion.value,
@@ -85,7 +84,7 @@
 
         // Check if the updated product's stock is equal or less than the critical stock
         if (parseInt(product.cantidad) <= parseInt(product.stock_critico)) {
-          alert(`Atención: El stock del producto ${product.nombre} ha alcanzado o está por debajo del nivel crítico.`);
+          alert(`Atención: El stock del producto ${product.tipo} ha alcanzado o está por debajo del nivel crítico.`);
         }
 
       } else {
@@ -95,7 +94,7 @@
 
         // Check if the new product's stock is equal or less than the critical stock
         if (parseInt(product.cantidad) <= parseInt(product.stock_critico)) {
-          alert(`Atención: El stock del producto ${product.nombre} ha alcanzado o está por debajo del nivel crítico.`);
+          alert(`Atención: El stock del producto ${product.tipo} ha alcanzado o está por debajo del nivel crítico.`);
         }
       }
 
@@ -139,7 +138,7 @@
 
         const productInfo = document.createElement('div');
         productInfo.className = 'product-info';
-        productInfo.textContent = `${product.nombre} - ${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
+        productInfo.textContent = `${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
         li.appendChild(productInfo);
 
         const buttonGroup = document.createElement('div');
@@ -194,7 +193,7 @@
     }
 
     function confirmDeleteProduct(product) {
-      const confirmation = confirm(`¿Estás seguro de que deseas eliminar el producto ${product.nombre}?`);
+      const confirmation = confirm(`¿Estás seguro de que deseas eliminar el producto ${product.tipo}?`);
       if (confirmation) {
         deleteProduct(product);
       }
@@ -216,7 +215,7 @@
           product.cantidad = 0;
         }
         if (product.cantidad <= product.stock_critico) {
-          alert(`Atención: El stock del producto ${product.nombre} ha alcanzado el nivel crítico.`);
+          alert(`Atención: El stock del producto ${product.tipo} ha alcanzado el nivel crítico.`);
         }
         await window.api.updateProduct(productId, product);
         loadProducts();
@@ -231,20 +230,13 @@
 
         const productInfo = document.createElement('div');
         productInfo.className = 'product-info';
-        productInfo.textContent = `${product.nombre} - ${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
+        productInfo.textContent = `${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
         li.appendChild(productInfo);
 
         const buttonGroup = document.createElement('div');
         buttonGroup.className = 'button-group';
 
-        const restoreButton = document.createElement('button');
-        restoreButton.textContent = 'Restaurar';
-        restoreButton.className = 'btn btn-sm btn-success';
-        restoreButton.addEventListener('click', () => restoreProduct(product.id));
-        buttonGroup.appendChild(restoreButton);
-
-        li.appendChild(buttonGroup);
-        deletedProductList.appendChild(li);
+        
       });
     }
 
@@ -259,7 +251,7 @@
 
     function loadProductIntoForm(product) {
       form['product-id'].value = product.id;
-      form.nombre.value = product.nombre;
+      //form.nombre.value = product.nombre;
       form.tipo.value = product.tipo;
       form.marca.value = product.marca;
       form.estiloGraduacion.value = product.estiloGraduacion;
@@ -274,7 +266,7 @@
       providers.forEach(provider => {
         const option = document.createElement('option');
         option.value = provider.id;
-        option.textContent = provider.nombre;
+        option.textContent = provider.tipo;
         providerFilter.appendChild(option);
       });
     }
