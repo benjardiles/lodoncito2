@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, Notification } = require('electron');
 const path = require('path');
+
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
@@ -14,10 +15,12 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+
     },
   });
 
   mainWindow.loadFile('src/ui/index.html');
+  //mainWindow.webContents.openDevTools()
 }
 
 function createProvidersWindow() {

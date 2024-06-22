@@ -37,10 +37,22 @@ h1 {
 }
 
 .product-form input,
+.product-form select,
 .product-form button {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.product-form select {
+  appearance: none; /* Quita el estilo por defecto del navegador */
+  background-color: #fff;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 30px; /* Espacio para el ícono de flecha */
+  cursor: pointer;
 }
 
 .product-form button {

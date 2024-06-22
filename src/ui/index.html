@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Productos</h1>
+    <!-- <h1>Productos</h1> -->
     <div class="content">
       <div class="form-section">
         <h2>Agregar Producto</h2>
@@ -26,7 +26,9 @@
           <br>
           <input type="number" id="stock_critico" placeholder="Stock Crítico" required>
           <br>
-          <input type="text" id="id_proveedor" placeholder="ID Proveedor" required>
+          <select id="id_proveedor" placeholder="Proveedor" required>
+            <!-- Aquí se agregarán los proveedores dinámicamente -->
+          </select>
           <br>
           <button type="submit" class="btn btn-primary">Guardar Producto</button>
         </form>
@@ -35,9 +37,7 @@
         <nav class="navbar">
           <div class="filter-sort">
             <input type="text" id="search-bar" placeholder="Buscar...">
-            <select id="provider-filter" class="form-select">
-              <!-- Aquí se agregarán los proveedores dinámicamente -->
-            </select>
+            <select id="provider-filter" class="form-select"></select>
             <select id="sort-order" class="form-select">
               <option value="asc">Ordenar: Menor a Mayor</option>
               <option value="desc">Ordenar: Mayor a Menor</option>
@@ -45,7 +45,6 @@
           </div>
         </nav>
         <ul id="product-list" class="product-list"></ul>
-        
       </div>
     </div>
 
@@ -59,6 +58,7 @@
     
     const openProvidersButton = document.getElementById('open-providers');
     const providerFilter = document.getElementById('provider-filter');
+    const providersSelect = document.getElementById('id_proveedor');
     const sortOrder = document.getElementById('sort-order');
     const searchBar = document.getElementById('search-bar');
 
@@ -76,7 +76,7 @@
         stock_critico: form.stock_critico.value,
         id_proveedor: form.id_proveedor.value,
       };
-
+      
       if (productId) {
         // Update existing product
         const updatedProduct = await window.api.updateProduct(productId, product);
@@ -235,8 +235,6 @@
 
         const buttonGroup = document.createElement('div');
         buttonGroup.className = 'button-group';
-
-        
       });
     }
 
@@ -262,18 +260,32 @@
 
     async function loadProviders() {
       const providers = await window.api.getProviders();
+      console.log(providers)
       providerFilter.innerHTML = '<option value="">Todos los proveedores</option>';
       providers.forEach(provider => {
         const option = document.createElement('option');
         option.value = provider.id;
-        option.textContent = provider.tipo;
+        option.textContent = provider.nombre;
         providerFilter.appendChild(option);
+      });
+    }
+
+    async function loadProvidersSelect() {
+      const providers = await window.api.getProviders();
+      console.log(providers)
+      providersSelect.innerHTML = '<option value="">Selecciona un proveedor</option>';
+      providers.forEach(provider => {
+        const option = document.createElement('option');
+        option.value = provider.id;
+        option.textContent = provider.nombre;
+        providersSelect.appendChild(option);
       });
     }
 
     // Cargar productos y proveedores
     loadProducts();
     loadProviders();
+    loadProvidersSelect();
   </script>
 </body>
 </html>
