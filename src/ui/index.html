@@ -20,7 +20,7 @@
           <br>
           <input type="text" id="marca" placeholder="Marca" required>
           <br>
-          <input type="text" id="estiloGraduacion" placeholder="Estilo Graduacion" required>
+          <input type="text" id="estilo_graduacion" placeholder="Estilo Graduacion" required>
           <br>
           <input type="number" id="cantidad" placeholder="Cantidad" required>
           <br>
@@ -71,7 +71,7 @@
         //nombre: form.nombre.value,
         tipo: form.tipo.value,
         marca: form.marca.value,
-        estiloGraduacion: form.estiloGraduacion.value,
+        estilo_graduacion: form.estilo_graduacion.value,
         cantidad: form.cantidad.value,
         stock_critico: form.stock_critico.value,
         id_proveedor: form.id_proveedor.value,
@@ -138,7 +138,7 @@
 
         const productInfo = document.createElement('div');
         productInfo.className = 'product-info';
-        productInfo.textContent = `${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
+        productInfo.textContent = `${product.marca} - ${product.tipo} - ${product.estilo_graduacion} - ${product.cantidad} - ${product.stock_critico}`;
         li.appendChild(productInfo);
 
         const buttonGroup = document.createElement('div');
@@ -230,7 +230,7 @@
 
         const productInfo = document.createElement('div');
         productInfo.className = 'product-info';
-        productInfo.textContent = `${product.marca} - ${product.tipo} - ${product.estiloGraduacion} - ${product.cantidad} - ${product.stock_critico}`;
+        productInfo.textContent = `${product.marca} - ${product.tipo} - ${product.estilo_graduacion} - ${product.cantidad} - ${product.stock_critico}`;
         li.appendChild(productInfo);
 
         const buttonGroup = document.createElement('div');
@@ -252,7 +252,7 @@
       //form.nombre.value = product.nombre;
       form.tipo.value = product.tipo;
       form.marca.value = product.marca;
-      form.estiloGraduacion.value = product.estiloGraduacion;
+      form.estilo_graduacion.value = product.estilo_graduacion;
       form.cantidad.value = product.cantidad;
       form.stock_critico.value = product.stock_critico;
       form.id_proveedor.value = product.id_proveedor;

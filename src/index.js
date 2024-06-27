@@ -58,7 +58,7 @@ ipcMain.handle('create-product', async (event, product) => {
         nombre: product.nombre,
         tipo: product.tipo,
         marca: product.marca,
-        estiloGraduacion: product.estiloGraduacion,
+        estilo_graduacion: product.estilo_graduacion,
         cantidad: parseInt(product.cantidad, 10), // Aseguramos que es un entero
         stock_critico: parseInt(product.stock_critico, 10), // Aseguramos que es un entero
         id_proveedor: product.id_proveedor
