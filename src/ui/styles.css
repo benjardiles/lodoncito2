@@ -1,4 +1,4 @@
-/* Mantén tu estilo existente */
+/* Estilos existentes */
 body {
   font-family: Arial, sans-serif;
   background-color: #f0f8ff;
@@ -82,6 +82,12 @@ h1 {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 1000;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
 }
 
 .navbar h2 {
@@ -149,4 +155,21 @@ h1 {
 
 #open-providers:hover {
   background-color: #5a6268;
+}
+
+/* Nueva clase para el botón de exportación a Excel */
+#export-excel {
+  display: block;
+  margin: 20px auto;
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+}
+
+#export-excel:hover {
+  background-color: #218838;
 }

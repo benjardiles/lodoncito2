@@ -5,6 +5,7 @@
   <title>Mi App Electron</title>
   <link rel="stylesheet" href="./bootstrap.min(2).css">
   <link rel="stylesheet" href="./styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -14,7 +15,6 @@
         <h2>Agregar Producto</h2>
         <form id="product-form" class="product-form">
           <input type="hidden" id="product-id">
-          <!-- <input type="text" id="nombre" placeholder="Nombre" required> -->
           <br>
           <input type="text" id="tipo" placeholder="Tipo" required>
           <br>
@@ -39,6 +39,7 @@
             <input type="text" id="search-bar" placeholder="Buscar...">
             <select id="provider-filter" class="form-select"></select>
             <select id="sort-order" class="form-select">
+              <option value="none">Ordenar: Sin Orden</option>
               <option value="asc">Ordenar: Menor a Mayor</option>
               <option value="desc">Ordenar: Mayor a Menor</option>
             </select>
@@ -48,8 +49,8 @@
       </div>
     </div>
 
-    <!-- Botón para abrir la página de proveedores -->
     <button id="open-providers" class="btn btn-secondary">Ver Proveedores</button>
+    <button id="export-excel" class="btn btn-success">Exportar a Excel</button>
   </div>
 
   <script>
@@ -68,7 +69,6 @@
       e.preventDefault();
       const productId = form['product-id'].value;
       const product = {
-        //nombre: form.nombre.value,
         tipo: form.tipo.value,
         marca: form.marca.value,
         estilo_graduacion: form.estilo_graduacion.value,
@@ -78,21 +78,17 @@
       };
       
       if (productId) {
-        // Update existing product
         const updatedProduct = await window.api.updateProduct(productId, product);
         console.log('Product updated:', updatedProduct);
 
-        // Check if the updated product's stock is equal or less than the critical stock
         if (parseInt(product.cantidad) <= parseInt(product.stock_critico)) {
           alert(`Atención: El stock del producto ${product.tipo} ha alcanzado o está por debajo del nivel crítico.`);
         }
 
       } else {
-        // Create new product
         const newProduct = await window.api.createProduct(product);
         console.log('Product created:', newProduct);
 
-        // Check if the new product's stock is equal or less than the critical stock
         if (parseInt(product.cantidad) <= parseInt(product.stock_critico)) {
           alert(`Atención: El stock del producto ${product.tipo} ha alcanzado o está por debajo del nivel crítico.`);
         }
@@ -113,23 +109,17 @@
     async function loadProducts() {
       let products = await window.api.getProducts();
 
-      // Filtrar por proveedor
       const provider = providerFilter.value;
       if (provider) {
         products = products.filter(product => product.id_proveedor === provider);
       }
 
-      // Ordenar los productos
       const order = sortOrder.value;
-      products = products.sort((a, b) => {
-        const quantityA = parseInt(a.cantidad);
-        const quantityB = parseInt(b.cantidad);
-        if (order === 'asc') {
-          return quantityA - quantityB;
-        } else {
-          return quantityB - quantityA;
-        }
-      });
+      if (order === 'asc') {
+        products = products.sort((a, b) => parseInt(a.cantidad) - parseInt(b.cantidad));
+      } else if (order === 'desc') {
+        products = products.sort((a, b) => parseInt(b.cantidad) - parseInt(a.cantidad));
+      }
 
       productList.innerHTML = '';
       products.forEach(product => {
@@ -156,14 +146,12 @@
         deleteButton.addEventListener('click', () => confirmDeleteProduct(product));
         buttonGroup.appendChild(deleteButton);
 
-        // Botón para incrementar el stock
         const incrementButton = document.createElement('button');
         incrementButton.textContent = '+';
         incrementButton.className = 'btn btn-sm btn-success';
         incrementButton.addEventListener('click', () => changeProductQuantity(product.id, 1));
         buttonGroup.appendChild(incrementButton);
 
-        // Botón para decrementar el stock
         const decrementButton = document.createElement('button');
         decrementButton.textContent = '-';
         decrementButton.className = 'btn btn-sm btn-secondary';
@@ -174,7 +162,6 @@
         productList.appendChild(li);
       });
 
-      // Ejecutar la función de filtro para aplicar cualquier entrada de búsqueda actual
       filterProductsByName();
     }
 
@@ -249,7 +236,6 @@
 
     function loadProductIntoForm(product) {
       form['product-id'].value = product.id;
-      //form.nombre.value = product.nombre;
       form.tipo.value = product.tipo;
       form.marca.value = product.marca;
       form.estilo_graduacion.value = product.estilo_graduacion;
@@ -282,10 +268,29 @@
       });
     }
 
-    // Cargar productos y proveedores
+    async function exportToExcel() {
+      const products = await window.api.getProducts();
+      const worksheetData = products.map(product => ({
+        Tipo: product.tipo,
+        Marca: product.marca,
+        EstiloGraduacion: product.estilo_graduacion,
+        Cantidad: product.cantidad,
+        StockCritico: product.stock_critico,
+        Proveedor: product.id_proveedor
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos');
+
+      XLSX.writeFile(workbook, 'productos.xlsx');
+    }
+
     loadProducts();
     loadProviders();
     loadProvidersSelect();
+
+    document.getElementById('export-excel').addEventListener('click', exportToExcel);
   </script>
 </body>
 </html>
